@@ -424,6 +424,12 @@ client::StartApplication (void)
     Ptr<Socket> sock = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
     InetSocketAddress sockAddr (master_ip.GetAddress(0), master_port);
     sock->Connect (sockAddr);
+    
+    //Create socket for UDP between client and mapper
+    Ptr<Socket> sock2 = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+    InetSocketAddress sockAddr2(ip.GetAddress(0), port);
+    sock2->Bind (sockAddr2);
+    sock2->SetRecvCallback (MakeCallback (&client::HandleRead, this));
 
     GenerateTraffic(sock, ip, port, 0);
 }
