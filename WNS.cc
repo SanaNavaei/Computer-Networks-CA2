@@ -323,6 +323,21 @@ main (int argc, char *argv[])
     wifiStaNodeMaster.Get (0)->AddApplication (masterApp);
     masterApp->SetStartTime (Seconds (0.0));
     masterApp->SetStopTime (Seconds (duration));  
+    
+    Ptr<mapper> mapperApp_1 = CreateObject<mapper>(port, staNodesMapperInterface);
+    wifiStaNodeMapper.Get(0)->AddApplication (mapperApp_1);
+    mapperApp_1->SetStartTime (Seconds (0.0));
+    mapperApp_1->SetStopTime (Seconds (duration));
+
+    Ptr<mapper> mapperApp_2 = CreateObject<mapper> (port, staNodesMapperInterface);
+    wifiStaNodeMapper.Get(1)->AddApplication (mapperApp_2);
+    mapperApp_2->SetStartTime (Seconds (0.0));
+    mapperApp_2->SetStopTime (Seconds (duration));
+
+    Ptr<mapper> mapperApp_3 = CreateObject<mapper> (port, staNodesMapperInterface);
+    wifiStaNodeMapper.Get(2)->AddApplication (mapperApp_3);
+    mapperApp_3->SetStartTime (Seconds (0.0));
+    mapperApp_3->SetStopTime (Seconds (duration));
 
     NS_LOG_INFO ("Run Simulation");
 
