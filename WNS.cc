@@ -231,6 +231,7 @@ public:
 private:
     virtual void StartApplication (void);
     void HandleRead (Ptr<Socket> socket);
+    void HandleAccept (Ptr<Socket> socket, const Address& from);
     
     uint16_t port;
     Ptr<Socket> socket;
@@ -522,4 +523,9 @@ mapper::HandleRead (Ptr<Socket> socket)
         packet->RemoveHeader(header);
         
     }
+}
+
+mapper::HandleAccept (Ptr<Socket> socket, const Address& from)
+{
+    socket->SetRecvCallback (MakeCallback (&mapper::HandleRead, this));
 }
