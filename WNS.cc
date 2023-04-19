@@ -99,8 +99,13 @@ public:
     virtual void Serialize (Buffer::Iterator start) const;
     virtual uint32_t Deserialize (Buffer::Iterator start);
     virtual uint32_t GetSerializedSize (void) const;
+    void SetIp (Ipv4Address ip);
+    void SetPort (uint16_t port);
+    
 private:
     uint16_t m_data;
+    Ipv4Address m_ip;
+    uint16_t m_port;
 };
 
 MyHeader::MyHeader ()
@@ -163,6 +168,18 @@ uint16_t
 MyHeader::GetData (void) const
 {
     return m_data;
+}
+
+void
+MyHeader::SetIp (Ipv4Address ip)
+{
+    m_ip = ip;
+}
+
+void
+MyHeader::SetPort (uint16_t port)
+{
+    m_port = port;
 }
 
 class master : public Application
