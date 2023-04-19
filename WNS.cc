@@ -444,6 +444,16 @@ master::StartApplication (void)
     socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
     InetSocketAddress local = InetSocketAddress (ip.GetAddress(0), port);
     socket->Bind (local);
+    
+    mapper_1_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_1 = InetSocketAddress (mapper_ip.GetAddress(0), mapper_1_port);
+    mapper_1_socket->Connect (remote_1);
+    mapper_2_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_2 = InetSocketAddress (mapper_ip.GetAddress(1), mapper_2_port);
+    mapper_2_socket->Connect (remote_2);
+    mapper_3_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_3 = InetSocketAddress (mapper_ip.GetAddress(2), mapper_3_port);
+    mapper_3_socket->Connect (remote_3);
 
     socket->SetRecvCallback (MakeCallback (&master::HandleRead, this));
 }
