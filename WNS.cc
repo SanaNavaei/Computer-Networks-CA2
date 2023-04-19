@@ -202,6 +202,7 @@ public:
 
 private:
     virtual void StartApplication (void);
+    void HandleRead (Ptr<Socket> socket);
     
     uint16_t port;
     Ptr<Socket> socket;
@@ -408,4 +409,25 @@ mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip)
 
 mapper::~mapper ()
 {
+}
+
+void
+mapper::StartApplication (void)
+{
+}
+
+void
+mapper::HandleRead (Ptr<Socket> socket)
+{
+    Ptr<Packet> packet;
+
+    while((packet = socket->Recv()))
+    {
+        if (packet->GetSize() == 0)
+            break;
+
+        MyHeader header;
+        packet->RemoveHeader(header);
+        
+    }
 }
