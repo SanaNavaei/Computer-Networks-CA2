@@ -458,21 +458,29 @@ master::StartApplication (void)
     socket->SetRecvCallback (MakeCallback (&master::HandleRead, this));
 }
 
-void 
+void
 master::HandleRead (Ptr<Socket> socket)
 {
     Ptr<Packet> packet;
 
     while ((packet = socket->Recv ()))
     {
-        if (packet->GetSize () == 0)
+        if (packet->GetSize() == 0)
         {
             break;
         }
+        MyHeader header;
+        packet->RemoveHeader (header);
+        Ptr<Packet> packet2 = new Packet();
+        Ptr<Packet> packet3 = new Packet();
+        Ptr<Packet> packet4 = new Packet();
+        packet2->AddHeader (header);
+        packet3->AddHeader (header);
+        packet4->AddHeader (header);
 
-        MyHeader destinationHeader;
-        packet->RemoveHeader (destinationHeader);
-        destinationHeader.Print(std::cout);
+        mapper_1_socket -> Send(packet2);
+        mapper_2_socket->Send(packet3);
+        mapper_3_socket -> Send(packet4);
     }
 }
 
