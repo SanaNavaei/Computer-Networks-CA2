@@ -147,21 +147,24 @@ MyHeader::Print (std::ostream &os) const
 uint32_t
 MyHeader::GetSerializedSize (void) const
 {
-    return 2;
+    return 8;
 }
 
 void
 MyHeader::Serialize (Buffer::Iterator start) const
 {
     start.WriteHtonU16 (m_data);
+    start.WriteHtonU32(m_ip.Get());
+    start.WriteHtonU16(m_port);
 }
 
 uint32_t
 MyHeader::Deserialize (Buffer::Iterator start)
 {
     m_data = start.ReadNtohU16 ();
-
-    return 2;
+    m_ip.Set(start.ReadNtohU32());
+    m_port = start.ReadNtohU16();
+    return 8;
 }
 
 void 
