@@ -36,7 +36,7 @@ NS_LOG_COMPONENT_DEFINE ("WifiTopology");
 
 std::map<int, char> mapper1_mapping = {{0, 'a'},{1, 'b'},{2, 'c'},{3, 'd'},{4, 'e'},{5, 'f'},{6, 'g'},{7, 'h'},{8, 'i'}};
 std::map<int, char> mapper2_mapping = {{9, 'j'},{10, 'k'},{11, 'l'},{12, 'm'},{13, 'n'},{14, 'o'},{15, 'p'},{16, 'q'},{17, 'r'}};
-std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'}};
+std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'},{26, ' '};
 
 void
 ThroughputMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double em)
@@ -243,7 +243,7 @@ private:
     uint16_t master_port;
     Ipv4InterfaceContainer master_ip;
     std::string result = "";
-    std::vector<uint16_t> input = {7,4,11,11,14};
+    std::vector<uint16_t> input = {7,4,11,11,14,26};
     uint16_t indx = 0;
 };
 
