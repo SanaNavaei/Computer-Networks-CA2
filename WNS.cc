@@ -192,6 +192,16 @@ private:
     Ipv4InterfaceContainer ip;
 };
 
+class mapper : public Application
+{
+public:
+    mapper ();
+    virtual ~mapper ();
+
+private:
+    virtual void StartApplication (void);
+};
+
 
 int
 main (int argc, char *argv[])
