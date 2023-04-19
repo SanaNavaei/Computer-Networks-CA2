@@ -424,6 +424,7 @@ client::client (uint16_t port, Ipv4InterfaceContainer& ip, uint16_t master_port,
 
 client::~client ()
 {
+    cout << result << endl;
 }
 
 static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint16_t port, uint16_t data)
@@ -474,7 +475,8 @@ client::HandleRead(Ptr<Socket> socket)
         }
         MyHeader m;
         packet->RemoveHeader (m);
-        std::cout << "Received packet from " << m.GetIp() << ":" << m.GetPort() << " with data " << static_cast<char>(m.GetData()) << std::endl;
+        //std::cout << "Received packet from " << m.GetIp() << ":" << m.GetPort() << " with data " << static_cast<char>(m.GetData()) << std::endl;
+        result += static_cast<char>(m.GetData());
     }
 }
 
