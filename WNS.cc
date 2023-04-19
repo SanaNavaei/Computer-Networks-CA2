@@ -369,17 +369,19 @@ client::~client ()
 {
 }
 
-static void GenerateTraffic (Ptr<Socket> socket, uint16_t data)
+static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint16_t port, uint16_t data)
 {
     Ptr<Packet> packet = new Packet();
     MyHeader m;
     m.SetData(data);
+    m.SetIp(ip.GetAddress(0));
+    m.SetPort(port);
 
     packet->AddHeader (m);
     packet->Print (std::cout);
-    socket->Send(packet);
+    socket->Send (packet);
 
-    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, rand() % 26);
+    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, rand() % 26);
 }
 
 void
@@ -390,7 +392,7 @@ client::StartApplication (void)
     InetSocketAddress sockAddr (master_ip.GetAddress(0), master_port);
     sock->Connect (sockAddr);
 
-    GenerateTraffic(sock, 0);
+    GenerateTraffic(sock, ip, port, 0);
 }
 
 master::master (uint16_t port, Ipv4InterfaceContainer& ip)
