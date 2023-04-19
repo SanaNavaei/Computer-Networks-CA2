@@ -218,6 +218,7 @@ public:
 
 private:
     virtual void StartApplication (void);
+    void HandleRead (Ptr<Socket> socket);
 
     uint16_t port;
     Ptr<Socket> socket;
@@ -432,6 +433,11 @@ client::StartApplication (void)
     sock2->SetRecvCallback (MakeCallback (&client::HandleRead, this));
 
     GenerateTraffic(sock, ip, port, 0);
+}
+
+void
+client::HandleRead(Ptr<Socket> socket)
+{
 }
 
 master::master (uint16_t port, Ipv4InterfaceContainer& ip ,
