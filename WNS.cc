@@ -229,7 +229,7 @@ private:
 class mapper : public Application
 {
 public:
-    mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, char> map_set);
+    mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, char> map_set, int i);
     virtual ~mapper ();
 
 private:
@@ -241,6 +241,7 @@ private:
     Ptr<Socket> socket;
     Ipv4InterfaceContainer ip;
     std::map<int, char> map_set;
+    int i;
 };
 
 
@@ -358,17 +359,17 @@ main (int argc, char *argv[])
     masterApp->SetStartTime (Seconds (0.0));
     masterApp->SetStopTime (Seconds (duration));  
     
-    Ptr<mapper> mapperApp_1 = CreateObject<mapper>(port, staNodesMapperInterface);
+    Ptr<mapper> mapperApp_1 = CreateObject<mapper>(port, staNodesMapperInterface, 0);
     wifiStaNodeMapper.Get(0)->AddApplication (mapperApp_1);
     mapperApp_1->SetStartTime (Seconds (0.0));
     mapperApp_1->SetStopTime (Seconds (duration));
 
-    Ptr<mapper> mapperApp_2 = CreateObject<mapper> (port, staNodesMapperInterface);
+    Ptr<mapper> mapperApp_2 = CreateObject<mapper> (port, staNodesMapperInterface, 1);
     wifiStaNodeMapper.Get(1)->AddApplication (mapperApp_2);
     mapperApp_2->SetStartTime (Seconds (0.0));
     mapperApp_2->SetStopTime (Seconds (duration));
 
-    Ptr<mapper> mapperApp_3 = CreateObject<mapper> (port, staNodesMapperInterface);
+    Ptr<mapper> mapperApp_3 = CreateObject<mapper> (port, staNodesMapperInterface, 2);
     wifiStaNodeMapper.Get(2)->AddApplication (mapperApp_3);
     mapperApp_3->SetStartTime (Seconds (0.0));
     mapperApp_3->SetStopTime (Seconds (duration));
@@ -490,10 +491,11 @@ master::HandleRead (Ptr<Socket> socket)
     }
 }
 
-mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int)
+mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, int i)
         : port (port),
           ip (ip),
-          map_set (map)
+          map_set (map),
+          i(i)
 
 {
     std::srand (time(0));
