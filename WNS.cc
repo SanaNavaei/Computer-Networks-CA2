@@ -522,6 +522,30 @@ mapper::HandleRead (Ptr<Socket> socket)
         MyHeader header;
         packet->RemoveHeader(header);
         
+        //we should find the data in the header
+        uint16_t data = header.GetData();
+        Ipv4Address ip = header.GetIp();
+        uint16_t port = header.GetPort();
+        for (const auto &kv : map_set)
+        {
+            //cout << kv.first << " " << data << endl;
+            if(kv.first == data)
+            {
+                MyHeader header1;
+                char new_data = kv.second;
+                //cout << "new data is " << new_data << endl;
+                header1.SetData(new_data);
+                Ptr<Packet> packet1 = Create<Packet> (header1.GetSerializedSize());
+                packet1->AddHeader(header1);
+                Ptr<Socket> socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+                InetSocketAddress remote = InetSocketAddress (ip, port);
+                socket->Connect (remote);
+                socket->Send(packet1);
+                socket->Close();
+                break;
+            }
+        }
+        
     }
 }
 
