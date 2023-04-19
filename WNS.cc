@@ -185,7 +185,9 @@ MyHeader::SetPort (uint16_t port)
 class master : public Application
 {
 public:
-    master (uint16_t port, Ipv4InterfaceContainer& ip);
+    master (uint16_t port, Ipv4InterfaceContainer& ip ,
+            uint16_t mapper_1_port, uint16_t mapper_2_port, uint16_t mapper_3_port,
+            Ipv4InterfaceContainer& mapper_ip);
     virtual ~master ();
 private:
     virtual void StartApplication (void);
@@ -193,7 +195,14 @@ private:
 
     uint16_t port;
     Ipv4InterfaceContainer ip;
+    uint16_t mapper_1_port;
+    uint16_t mapper_2_port;
+    uint16_t mapper_3_port;
+    Ipv4InterfaceContainer mapper_ip;
     Ptr<Socket> socket;
+    Ptr<Socket> mapper_1_socket;
+    Ptr<Socket> mapper_2_socket;
+    Ptr<Socket> mapper_3_socket;
 };
 
 
@@ -412,9 +421,15 @@ client::StartApplication (void)
     GenerateTraffic(sock, ip, port, 0);
 }
 
-master::master (uint16_t port, Ipv4InterfaceContainer& ip)
+master::master (uint16_t port, Ipv4InterfaceContainer& ip ,
+                uint16_t mapper_1_port, uint16_t mapper_2_port, uint16_t mapper_3_port,
+                Ipv4InterfaceContainer& mapper_ip)
         : port (port),
-          ip (ip)
+          ip (ip),
+          mapper_1_port(mapper_1_port),
+          mapper_2_port(mapper_2_port),
+          mapper_3_port(mapper_3_port),
+          mapper_ip(mapper_ip)
 {
     std::srand (time(0));
 }
