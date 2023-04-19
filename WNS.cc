@@ -30,11 +30,6 @@
 #include <map>
 #include <vector>
 
-std::string result ="";
-
-std::vector<uint16_t> input = {7,4,11,11,14};
-uint16_t indx = 0;
-
 using namespace ns3;
 using namespace std;
 NS_LOG_COMPONENT_DEFINE ("WifiTopology");
@@ -247,6 +242,9 @@ private:
     Ipv4InterfaceContainer ip;
     uint16_t master_port;
     Ipv4InterfaceContainer master_ip;
+    std::string result = "";
+    std::vector<uint16_t> input = {7,4,11,11,14};
+    uint16_t indx = 0;
 };
 
 class mapper : public Application
@@ -427,7 +425,7 @@ client::~client ()
     cout << result << endl;
 }
 
-static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint16_t port, uint16_t data)
+static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint16_t port, uint16_t data, std::vector<uint16_t> input, uint16_t indx)
 {
     Ptr<Packet> packet = new Packet();
     MyHeader m;
@@ -444,7 +442,7 @@ static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint
     // Increment the index for the next iteration
     indx = (indx + 1) % input.size();
 
-    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, value);
+    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, value, input, indx);
 }
 
 void
@@ -461,7 +459,7 @@ client::StartApplication (void)
     sock2->Bind (sockAddr2);
     sock2->SetRecvCallback (MakeCallback (&client::HandleRead, this));
 
-    GenerateTraffic(sock, ip, port, 0);
+    GenerateTraffic(sock, ip, port, 0, input, indx);
 }
 
 void
