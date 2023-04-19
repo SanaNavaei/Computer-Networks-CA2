@@ -289,6 +289,9 @@ main (int argc, char *argv[])
 
     mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
     mobility.Install (wifiStaNodeMaster);
+    
+    mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+    mobility.Install(wifiStaNodeMapper);
 
     InternetStackHelper stack;
     stack.Install (wifiStaNodeClient);
