@@ -363,12 +363,13 @@ main (int argc, char *argv[])
 
     uint16_t port = 1102;
 
-    Ptr<client> clientApp = CreateObject<client> (port, staNodesMasterInterface);
+    Ptr<client> clientApp = CreateObject<client> (port, staNodeClientInterface, port, staNodesMasterInterface);
     wifiStaNodeClient.Get (0)->AddApplication (clientApp);
     clientApp->SetStartTime (Seconds (0.0));
     clientApp->SetStopTime (Seconds (duration));  
 
-    Ptr<master> masterApp = CreateObject<master> (port, staNodesMasterInterface);
+    Ptr<master> masterApp = CreateObject<master> (port, staNodesMasterInterface, port, port, port,
+                                                staNodesMapperInterface);
     wifiStaNodeMaster.Get (0)->AddApplication (masterApp);
     masterApp->SetStartTime (Seconds (0.0));
     masterApp->SetStopTime (Seconds (duration));  
@@ -525,7 +526,7 @@ master::HandleRead (Ptr<Socket> socket)
     }
 }
 
-mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, int i)
+mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, char> map, int i)
         : port (port),
           ip (ip),
           map_set (map),
