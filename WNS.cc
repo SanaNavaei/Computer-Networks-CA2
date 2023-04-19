@@ -28,6 +28,12 @@
 #include "ns3/flow-monitor-module.h"
 
 #include <map>
+#include <vector>
+
+std::string result ="";
+
+std::vector<uint16_t> input = {7,4,11,11,14};
+uint16_t indx = 0;
 
 using namespace ns3;
 using namespace std;
