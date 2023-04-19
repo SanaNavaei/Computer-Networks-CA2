@@ -592,6 +592,7 @@ mapper::HandleRead (Ptr<Socket> socket)
     }
 }
 
+void
 mapper::HandleAccept (Ptr<Socket> socket, const Address& from)
 {
     socket->SetRecvCallback (MakeCallback (&mapper::HandleRead, this));
