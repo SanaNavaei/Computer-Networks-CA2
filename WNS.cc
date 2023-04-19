@@ -438,6 +438,15 @@ client::StartApplication (void)
 void
 client::HandleRead(Ptr<Socket> socket)
 {
+    Ptr<Packet> packet;
+    while ((packet = socket->Recv ()))
+    {
+        if (packet->GetSize() == 0) {
+            break;
+        }
+        MyHeader m;
+        packet->RemoveHeader (m);
+    }
 }
 
 master::master (uint16_t port, Ipv4InterfaceContainer& ip ,
