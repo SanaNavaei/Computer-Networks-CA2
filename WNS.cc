@@ -437,8 +437,13 @@ static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint
     packet->AddHeader (m);
     packet->Print (std::cout);
     socket->Send (packet);
+    
+    // Generate traffic with the current value in the vector
+    uint16_t value = input[indx];
+    // Increment the index for the next iteration
+    indx = (indx + 1) % input.size();
 
-    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, rand() % 26);
+    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, value);
 }
 
 void
