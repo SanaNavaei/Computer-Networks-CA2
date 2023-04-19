@@ -296,6 +296,7 @@ main (int argc, char *argv[])
     InternetStackHelper stack;
     stack.Install (wifiStaNodeClient);
     stack.Install (wifiStaNodeMaster);
+    stack.Install (wifiStaNodeMapper);
 
     Ipv4AddressHelper address;
 
