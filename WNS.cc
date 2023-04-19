@@ -33,6 +33,10 @@ using namespace ns3;
 using namespace std;
 NS_LOG_COMPONENT_DEFINE ("WifiTopology");
 
+std::map<int, char> mapper1_mapping = {{0, 'a'},{1, 'b'},{2, 'c'},{3, 'd'},{4, 'e'},{5, 'f'},{6, 'g'},{7, 'h'},{8, 'i'}};
+std::map<int, char> mapper2_mapping = {{9, 'j'},{10, 'k'},{11, 'l'},{12, 'm'},{13, 'n'},{14, 'o'},{15, 'p'},{16, 'q'},{17, 'r'}};
+std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'}};
+
 void
 ThroughputMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double em)
 {
@@ -225,7 +229,7 @@ private:
 class mapper : public Application
 {
 public:
-    mapper (uint16_t port, Ipv4InterfaceContainer& ip);
+    mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, char> map_set);
     virtual ~mapper ();
 
 private:
@@ -236,6 +240,7 @@ private:
     uint16_t port;
     Ptr<Socket> socket;
     Ipv4InterfaceContainer ip;
+    std::map<int, char> map_set;
 };
 
 
@@ -485,9 +490,10 @@ master::HandleRead (Ptr<Socket> socket)
     }
 }
 
-mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip)
+mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int)
         : port (port),
-          ip (ip)
+          ip (ip),
+          map_set (map)
 
 {
     std::srand (time(0));
