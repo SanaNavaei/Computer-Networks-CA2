@@ -302,6 +302,8 @@ main (int argc, char *argv[])
 
     Ipv4InterfaceContainer staNodeClientInterface;
     Ipv4InterfaceContainer staNodesMasterInterface;
+    Ipv4InterfaceContainer staNodesMapperInterface;
+    
 
     address.SetBase ("10.1.3.0", "255.255.255.0");
     staNodeClientInterface = address.Assign (staDeviceClient);
