@@ -463,6 +463,7 @@ client::HandleRead(Ptr<Socket> socket)
         }
         MyHeader m;
         packet->RemoveHeader (m);
+        std::cout << "Received packet from " << m.GetIp() << ":" << m.GetPort() << " with data " << static_cast<char>(m.GetData()) << std::endl;
     }
 }
 
