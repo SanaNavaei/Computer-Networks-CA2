@@ -105,6 +105,8 @@ public:
     virtual uint32_t GetSerializedSize (void) const;
     void SetIp (Ipv4Address ip);
     void SetPort (uint16_t port);
+    Ipv4Address GetIp (void) const;
+    uint16_t GetPort (void) const;
     
 private:
     uint16_t m_data;
@@ -184,6 +186,18 @@ void
 MyHeader::SetPort (uint16_t port)
 {
     m_port = port;
+}
+
+Ipv4Address
+MyHeader::GetIp (void) const
+{
+    return m_ip;
+}
+
+uint16_t
+MyHeader::GetPort (void) const
+{
+    return m_port;
 }
 
 class master : public Application
