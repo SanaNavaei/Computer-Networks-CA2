@@ -265,6 +265,9 @@ main (int argc, char *argv[])
     staDeviceMaster = wifi.Install (phy, mac, wifiStaNodeMaster);
 
     mac.SetType ("ns3::StaWifiMac","Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
+    
+    NetDeviceContainer staDeviceMapper;
+    staDeviceMapper = wifi.Install (phy, mac, wifiStaNodeMapper);
 
     Ptr<RateErrorModel> em = CreateObject<RateErrorModel> ();
     em->SetAttribute ("ErrorRate", DoubleValue (error));
