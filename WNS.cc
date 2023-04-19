@@ -183,7 +183,7 @@ private:
 class client : public Application
 {
 public:
-    client (uint16_t port, Ipv4InterfaceContainer& ip);
+    client (uint16_t port, Ipv4InterfaceContainer& ip, uint16_t master_port, Ipv4InterfaceContainer& master_ip);
     virtual ~client ();
 
 private:
@@ -192,6 +192,8 @@ private:
     uint16_t port;
     Ptr<Socket> socket;
     Ipv4InterfaceContainer ip;
+    uint16_t master_port;
+    Ipv4InterfaceContainer master_ip;
 };
 
 class mapper : public Application
@@ -354,9 +356,11 @@ main (int argc, char *argv[])
     return 0;
 }
 
-client::client (uint16_t port, Ipv4InterfaceContainer& ip)
+client::client (uint16_t port, Ipv4InterfaceContainer& ip, uint16_t master_port, Ipv4InterfaceContainer& master_ip)
         : port (port),
-          ip (ip)
+          ip (ip),
+          master_port (master_port),
+          master_ip (master_ip)
 {
     std::srand (time(0));
 }
@@ -381,8 +385,9 @@ static void GenerateTraffic (Ptr<Socket> socket, uint16_t data)
 void
 client::StartApplication (void)
 {
-    Ptr<Socket> sock = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
-    InetSocketAddress sockAddr (ip.GetAddress(0), port);
+    //Create socket for UDP between client and master
+    Ptr<Socket> sock = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
+    InetSocketAddress sockAddr (master_ip.GetAddress(0), master_port);
     sock->Connect (sockAddr);
 
     GenerateTraffic(sock, 0);
