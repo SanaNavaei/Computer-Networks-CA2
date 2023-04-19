@@ -499,6 +499,13 @@ mapper::~mapper ()
 void
 mapper::StartApplication (void)
 {
+    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId());
+    InetSocketAddress local = InetSocketAddress (ip.GetAddress(i), port);
+    socket->Bind (local);
+
+    // Listen for incoming connections
+    socket->Listen ();
+    socket->SetAcceptCallback(MakeNullCallback<bool, Ptr<Socket>, const Address &>(), MakeCallback(&mapper::HandleAccept, this));
 }
 
 void
