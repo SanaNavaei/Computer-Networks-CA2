@@ -197,11 +197,15 @@ private:
 class mapper : public Application
 {
 public:
-    mapper ();
+    mapper (uint16_t port, Ipv4InterfaceContainer& ip);
     virtual ~mapper ();
 
 private:
     virtual void StartApplication (void);
+    
+    uint16_t port;
+    Ptr<Socket> socket;
+    Ipv4InterfaceContainer ip;
 };
 
 
@@ -392,4 +396,16 @@ master::HandleRead (Ptr<Socket> socket)
         packet->RemoveHeader (destinationHeader);
         destinationHeader.Print(std::cout);
     }
+}
+
+mapper::mapper (uint16_t port, Ipv4InterfaceContainer& ip)
+        : port (port),
+          ip (ip)
+
+{
+    std::srand (time(0));
+}
+
+mapper::~mapper ()
+{
 }
