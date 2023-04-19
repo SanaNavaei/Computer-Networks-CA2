@@ -235,7 +235,6 @@ private:
     void HandleRead (Ptr<Socket> socket);
 
     uint16_t port;
-    Ptr<Socket> socket;
     Ipv4InterfaceContainer ip;
     uint16_t master_port;
     Ipv4InterfaceContainer master_ip;
