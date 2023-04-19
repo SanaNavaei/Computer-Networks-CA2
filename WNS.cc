@@ -238,6 +238,9 @@ main (int argc, char *argv[])
 
     NodeContainer wifiStaNodeMaster;
     wifiStaNodeMaster.Create (1);
+    
+    NodeContainer wifiStaNodeMapper;
+    wifiStaNodeMapper.Create (3);
 
     YansWifiChannelHelper channel = YansWifiChannelHelper::Default ();
 
