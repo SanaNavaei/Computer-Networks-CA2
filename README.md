@@ -92,3 +92,33 @@ private:
     uint16_t m_port;
 };
 ```
+#### **Now we are going to explain the functions of the header class.**  
+Functin `GetTypeId` is used to return a unique identifier (or TypeId) for the MyHeader class. This function is a common pattern used in ns-3 to get the unique TypeId for a class, which is useful for various purposes such as creating objects dynamically, registering callbacks, and more.  
+
+Function `GetInstanceTypeId` is used to return the TypeId of the instance of the MyHeader class. This function is a simple and useful way to get the TypeId of a specific instance of the MyHeader class.  
+
+Function `Print` is used to print the data of the header.  
+
+```c++
+TypeId
+MyHeader::GetTypeId (void)
+{
+    static TypeId tid = TypeId ("ns3::MyHeader")
+        .SetParent<Header> ()
+        .AddConstructor<MyHeader> ()
+    ;
+    return tid;
+}
+
+TypeId
+MyHeader::GetInstanceTypeId (void) const
+{
+    return GetTypeId ();
+}
+
+void
+MyHeader::Print (std::ostream &os) const
+{
+    os << "data = " << m_data << endl;
+}
+```
