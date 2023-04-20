@@ -305,4 +305,35 @@ client::HandleRead(Ptr<Socket> socket)
     }
 }
 ```
+## 5. Master Class
+
+The master class is used to receive data from the client and send it to the mappers.  
+
+```c++
+class master : public Application
+{
+public:
+    master (uint16_t port, Ipv4InterfaceContainer& ip ,
+            uint16_t mapper_1_port, uint16_t mapper_2_port, uint16_t mapper_3_port,
+            Ipv4InterfaceContainer& mapper_ip);
+    virtual ~master ();
+private:
+    virtual void StartApplication (void);
+    void HandleRead (Ptr<Socket> socket);
+
+    uint16_t port;
+    Ipv4InterfaceContainer ip;
+    uint16_t mapper_1_port;
+    uint16_t mapper_2_port;
+    uint16_t mapper_3_port;
+    Ipv4InterfaceContainer mapper_ip;
+    Ptr<Socket> socket;
+    Ptr<Socket> mapper_1_socket;
+    Ptr<Socket> mapper_2_socket;
+    Ptr<Socket> mapper_3_socket;
+};
+```
+
+
+
 
