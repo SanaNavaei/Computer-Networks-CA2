@@ -228,3 +228,81 @@ private:
 };
 ```
 
+#### **Now we are going to explain the functions of the client class.**  
+
+Functin `StartApplication` is called when the application starts. This function creates two UDP sockets, one for communication between the client and the master and another for communication between the client and a mapper.  
+
+The first socket is created using **Socket::CreateSocket** method, which returns a pointer to a new socket object. The type of socket being created is specified using **UdpSocketFactory::GetTypeId()**. The socket is then connected to the InetSocketAddress object sockAddr, which contains the master IP address and port number.
+
+The second socket is created using **Socket::CreateSocket** method, which returns a pointer to a new socket object. The type of socket being created is specified using **UdpSocketFactory::GetTypeId()**. The socket is then bound to the InetSocketAddress object sockAddr2, which contains the client IP address and port number. The socket is then set to receive data using the **SetRecvCallback** method.  
+
+Finally, the **GenerateTraffic** function is called with parameters for the first socket, the local IP address, the local port number, an offset value of 0, the input vector, and the index. This function likely generates traffic to be sent over the first socket to the server, using the input vector as the data payload. The index is used to keep track of the current position in the input vector.
+
+```c++
+void
+client::StartApplication (void)
+{
+    //Create socket for UDP between client and master
+    Ptr<Socket> sock = Socket::CreateSocket(GetNode(), UdpSocketFactory::GetTypeId());
+    InetSocketAddress sockAddr (master_ip.GetAddress(0), master_port);
+    sock->Connect (sockAddr);
+    
+    //Create socket for UDP between client and mapper
+    Ptr<Socket> sock2 = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+    InetSocketAddress sockAddr2(ip.GetAddress(0), port);
+    sock2->Bind (sockAddr2);
+    sock2->SetRecvCallback (MakeCallback (&client::HandleRead, this));
+
+    GenerateTraffic(sock, ip, port, 0, input, indx);
+}
+```
+
+Because the `GenerateTraffic` function is used in this section, we will explain it here.  
+This function can be used to generate network traffic with custom data payloads and intervals between packets. Inside the function, a new Packet object is created and a header is added to it. The header is initialized with the **data**, **ip**, and **port** values passed into the function.  
+After sending the packet, the function schedules itself to be called again in 0.1 seconds using the **Simulator::Schedule** method. The next value in the **input** vector is retrieved using the **indx** variable as the index. The **indx** variable is then incremented, and if it exceeds the size of the **input** vector, it is set back to 0.
+
+```c++
+static void GenerateTraffic (Ptr<Socket> socket, Ipv4InterfaceContainer ip, uint16_t port, uint16_t data, std::vector<uint16_t> input, uint16_t indx)
+{
+    Ptr<Packet> packet = new Packet();
+    MyHeader m;
+    m.SetData(data);
+    m.SetIp(ip.GetAddress(0));
+    m.SetPort(port);
+
+    packet->AddHeader (m);
+    packet->Print (std::cout);
+    socket->Send (packet);
+    
+    // Generate traffic with the current value in the vector
+    uint16_t value = input[indx];
+    // Increment the index for the next iteration
+    indx = (indx + 1) % input.size();
+
+    Simulator::Schedule (Seconds (0.1), &GenerateTraffic, socket, ip, port, value, input, indx);
+}
+```
+Function `HandleRead` is called when the client receives data from the mapper node.   
+Inside the function, a new Packet object is created and set to the value returned by the **Recv** method of the Socket object. This method blocks until data is received from the socket.  
+
+A while loop is then used to process all the packets received from the socket. The loop continues until the **Recv** method returns a null pointer, indicating that there are no more packets to process.  
+
+If the packet size is zero, the loop is broken as it indicates that the connection is closed. Otherwise, a custom header called **MyHeader** is added to the packet, and the header is removed from the packet using the **RemoveHeader** method.  
+
+```c++
+void
+client::HandleRead(Ptr<Socket> socket)
+{
+    Ptr<Packet> packet;
+    while ((packet = socket->Recv ()))
+    {
+        if (packet->GetSize() == 0) {
+            break;
+        }
+        MyHeader m;
+        packet->RemoveHeader (m);
+        result += static_cast<char>(m.GetData());
+    }
+}
+```
+
