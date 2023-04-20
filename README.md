@@ -387,6 +387,106 @@ master::HandleRead (Ptr<Socket> socket)
 }
 ```
 
+## 6. Mapper Class
+
+The `mapper` class is an application that runs on each of the mapper nodes in a distributed system. It receives packets from the master node over a **TCP** connection, processes them using a map_set, and sends the results back to the client node over a **UDP** connection.  
+```c++
+class mapper : public Application
+{
+public:
+    mapper (uint16_t port, Ipv4InterfaceContainer& ip, std::map<int, char> map_set, int i);
+    virtual ~mapper ();
+
+private:
+    virtual void StartApplication (void);
+    void HandleRead (Ptr<Socket> socket);
+    void HandleAccept (Ptr<Socket> socket, const Address& from);
+    
+    uint16_t port;
+    Ptr<Socket> socket;
+    Ipv4InterfaceContainer ip;
+    std::map<int, char> map_set;
+    int i;
+};
+
+```
+
+#### **Now we are going to explain the functions of the mapper class.**
+
+In the mapper class, the `StartApplication` function sets up the application by creating a TCP socket and binding it to a local address, and then sets up a callback function to handle incoming connections.
+
+Specifically, it does the following:
+
+- Creates a TCP socket using the TcpSocketFactory.
+- Binds the socket to a local address using the **Bind()** function and the **Ipv4InterfaceContainer** passed in as a parameter.
+- Sets up a callback function to handle incoming connections using the **SetAcceptCallback()** function and the **HandleAccept()** function as the callback.  
+
+```c++
+void
+mapper::StartApplication (void)
+{
+    Ptr<Socket> socket = Socket::CreateSocket (GetNode (), TcpSocketFactory::GetTypeId());
+    InetSocketAddress local = InetSocketAddress (ip.GetAddress(i), port);
+    socket->Bind (local);
+
+    // Listen for incoming connections
+    socket->Listen ();
+    socket->SetAcceptCallback(MakeNullCallback<bool, Ptr<Socket>, const Address &>(), MakeCallback(&mapper::HandleAccept, this));
+}
+```
+The `HandleRead` function iterates over the **map_set**, which is a map containing a set of key-value pairs that map a specific data value to a character. For each key-value pair, it checks if the data value from the packet matches the key in the map. If there is a match, it creates a new MyHeader with the corresponding character as the data value and creates a new Packet with this header. It then creates a new **UdpSocket** and connects to the ip and port from the original packet's header. Finally, it sends the new packet through the socket and closes it.  
+If no match is found in the map_set, the loop continues to the next packet.  
+
+```c++
+void
+mapper::HandleRead (Ptr<Socket> socket)
+{
+    Ptr<Packet> packet;
+
+    while((packet = socket->Recv()))
+    {
+        if (packet->GetSize() == 0)
+            break;
+
+        MyHeader header;
+        packet->RemoveHeader(header);
+        
+        //we should find the data in the header
+        uint16_t data = header.GetData();
+        Ipv4Address ip = header.GetIp();
+        uint16_t port = header.GetPort();
+        for (const auto &kv : map_set)
+        {
+            if(kv.first == data)
+            {
+                MyHeader header1;
+                char new_data = kv.second;
+                header1.SetData(new_data);
+                Ptr<Packet> packet1 = Create<Packet> (header1.GetSerializedSize());
+                packet1->AddHeader(header1);
+                Ptr<Socket> socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+                InetSocketAddress remote = InetSocketAddress (ip, port);
+                socket->Connect (remote);
+                socket->Send(packet1);
+                socket->Close();
+                break;
+            }
+        }
+        
+    }
+}
+```
+
+In `HandleAccept` function, we set the receive callback for the socket to the HandleRead function using the **MakeCallback** method. This means that whenever the socket receives a packet, it will call the HandleRead function to process it.  
+
+```c++
+void
+mapper::HandleAccept (Ptr<Socket> socket, const Address& from)
+{
+    socket->SetRecvCallback (MakeCallback (&mapper::HandleRead, this));
+}
+```
+
 
 
 
