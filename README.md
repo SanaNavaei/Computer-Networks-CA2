@@ -122,3 +122,85 @@ MyHeader::Print (std::ostream &os) const
     os << "data = " << m_data << endl;
 }
 ```
+
+Function `GetSerializedSize` is used to return the size of the header which is 8 bytes.  
+
+The `Serialize` function takes a **Buffer::Iterator** as an argument and serializes the contents of the MyHeader object to the buffer starting from the given iterator position. The function first converts the **m_data** member variable to network byte order using the **WriteHtonU16** function, then writes the **m_ip** member variable using the **WriteHtonU32** function, and finally writes the **m_port** member variable using the **WriteHtonU16** function.  
+
+The `Deserialize` function takes a **Buffer::Iterator** as an argument and deserializes the contents of the MyHeader object from the buffer starting from the given iterator position. The function first reads the **m_data** member variable using the **ReadNtohU16** function, then reads the **m_ip** member variable using the **ReadNtohU32** function, and finally reads the **m_port** member variable using the **ReadNtohU16** function. The function returns the size of the deserialized data, which is again a fixed value of 8 bytes.  
+
+```c++
+uint32_t
+MyHeader::GetSerializedSize (void) const
+{
+    return 8;
+}
+
+void
+MyHeader::Serialize (Buffer::Iterator start) const
+{
+    start.WriteHtonU16 (m_data);
+    start.WriteHtonU32(m_ip.Get());
+    start.WriteHtonU16(m_port);
+}
+
+uint32_t
+MyHeader::Deserialize (Buffer::Iterator start)
+{
+    m_data = start.ReadNtohU16 ();
+    m_ip.Set(start.ReadNtohU32());
+    m_port = start.ReadNtohU16();
+    return 8;
+}
+```
+
+Function `SetData` takes a **uint16_t** value as an argument and sets the **m_data** member variable to that value.  
+
+Function `GetData` returns the value of the **m_data** member variable.  
+
+Function `SetIp` takes an **Ipv4Address** value as an argument and sets the **m_ip** member variable to that value.  
+
+Function `SetPort` takes a **uint16_t** value as an argument and sets the **m_port** member variable to that value.  
+
+Function `GetIp` returns the value of the **m_ip** member variable.  
+
+Function `GetPort` returns the value of the **m_port** member variable.  
+
+```c++
+void
+MyHeader::SetData (uint16_t data)
+{
+    m_data = data;
+}
+
+uint16_t
+MyHeader::GetData (void) const
+{
+    return m_data;
+}
+
+void
+MyHeader::SetIp (Ipv4Address ip)
+{
+    m_ip = ip;
+}
+
+void
+MyHeader::SetPort (uint16_t port)
+{
+    m_port = port;
+}
+
+Ipv4Address
+MyHeader::GetIp (void) const
+{
+    return m_ip;
+}
+
+uint16_t
+MyHeader::GetPort (void) const
+{
+    return m_port;
+}
+```
+
