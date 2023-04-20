@@ -203,4 +203,28 @@ MyHeader::GetPort (void) const
     return m_port;
 }
 ```
+## 4. Client Class
+
+Client class is used to define the client node. The client node sends the data to the master node. It also receives the result from the master node. The **std::vector<uint16_t> input** stores data that will be sent to the master node. We choose the word `computer-network` as the data to be sent. The client class is defined as follows:  
+
+```c++
+class client : public Application
+{
+public:
+    client (uint16_t port, Ipv4InterfaceContainer& ip, uint16_t master_port, Ipv4InterfaceContainer& master_ip);
+    virtual ~client ();
+
+private:
+    virtual void StartApplication (void);
+    void HandleRead (Ptr<Socket> socket);
+
+    uint16_t port;
+    Ipv4InterfaceContainer ip;
+    uint16_t master_port;
+    Ipv4InterfaceContainer master_ip;
+    std::string result = "";
+    std::vector<uint16_t> input = {2,14,12,15,20,19,4,17,27,13,4,19,22,14,17,10,26};
+    uint16_t indx = 0;
+};
+```
 
