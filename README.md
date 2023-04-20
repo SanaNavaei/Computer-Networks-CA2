@@ -333,6 +333,59 @@ private:
     Ptr<Socket> mapper_3_socket;
 };
 ```
+#### **Now we are going to explain the functions of the master class.**
+
+Function `StartApplication` is called when the application starts. This function is used to initialize and configure the sockets required by the master node to communicate with the mapper nodes. The function creates and binds a **UDP socket** for receiving data from the client node and creates three **TCP sockets** for sending data to the mapper nodes. Finally, it sets the receive callback function for the UDP socket to the **HandleRead** function.
+
+```c++
+void
+master::StartApplication (void)
+{
+    socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
+    InetSocketAddress local = InetSocketAddress (ip.GetAddress(0), port);
+    socket->Bind (local);
+    
+    mapper_1_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_1 = InetSocketAddress (mapper_ip.GetAddress(0), mapper_1_port);
+    mapper_1_socket->Connect (remote_1);
+    mapper_2_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_2 = InetSocketAddress (mapper_ip.GetAddress(1), mapper_2_port);
+    mapper_2_socket->Connect (remote_2);
+    mapper_3_socket = Socket::CreateSocket(GetNode(), TcpSocketFactory::GetTypeId());
+    InetSocketAddress remote_3 = InetSocketAddress (mapper_ip.GetAddress(2), mapper_3_port);
+    mapper_3_socket->Connect (remote_3);
+
+    socket->SetRecvCallback (MakeCallback (&master::HandleRead, this));
+}
+```
+Function `HandleRead` is called when the master node receives data from the client node. Inside the function, a new Packet object is created and set to the value returned by the **Recv** method of the Socket object. This method blocks until data is received from the socket. This function is used to forward incoming packets from the UDP socket to the mapper nodes using TCP connections. It creates three new packets for each incoming packet and sends them to the mapper nodes with the same header as the original packet.
+```c++
+void
+master::HandleRead (Ptr<Socket> socket)
+{
+    Ptr<Packet> packet;
+
+    while ((packet = socket->Recv ()))
+    {
+        if (packet->GetSize() == 0)
+        {
+            break;
+        }
+        MyHeader header;
+        packet->RemoveHeader (header);
+        Ptr<Packet> packet2 = new Packet();
+        Ptr<Packet> packet3 = new Packet();
+        Ptr<Packet> packet4 = new Packet();
+        packet2->AddHeader (header);
+        packet3->AddHeader (header);
+        packet4->AddHeader (header);
+
+        mapper_1_socket -> Send(packet2);
+        mapper_2_socket->Send(packet3);
+        mapper_3_socket -> Send(packet4);
+    }
+}
+```
 
 
 
