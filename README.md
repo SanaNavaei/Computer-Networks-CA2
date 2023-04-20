@@ -64,3 +64,31 @@ std::map<int, char> mapper1_mapping = {{0, 'a'},{1, 'b'},{2, 'c'},{3, 'd'},{4, '
 std::map<int, char> mapper2_mapping = {{9, 'j'},{10, 'k'},{11, 'l'},{12, 'm'},{13, 'n'},{14, 'o'},{15, 'p'},{16, 'q'},{17, 'r'}};
 std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'},{26, ' '}};
 ```
+## 3. Header Class
+Header class is used to define the header of the packets. The header of the packets contains the data that is sent to the master node. The header of the packets also contains the IP address and the port number of the client node. The header class is defined as follows:  
+
+```c++
+class MyHeader : public Header 
+{
+public:
+    MyHeader ();
+    virtual ~MyHeader ();
+    void SetData (uint16_t data);
+    uint16_t GetData (void) const;
+    static TypeId GetTypeId (void);
+    virtual TypeId GetInstanceTypeId (void) const;
+    virtual void Print (std::ostream &os) const;
+    virtual void Serialize (Buffer::Iterator start) const;
+    virtual uint32_t Deserialize (Buffer::Iterator start);
+    virtual uint32_t GetSerializedSize (void) const;
+    void SetIp (Ipv4Address ip);
+    void SetPort (uint16_t port);
+    Ipv4Address GetIp (void) const;
+    uint16_t GetPort (void) const;
+    
+private:
+    uint16_t m_data;
+    Ipv4Address m_ip;
+    uint16_t m_port;
+};
+```
