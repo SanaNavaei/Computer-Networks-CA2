@@ -619,5 +619,112 @@ Simulator::Stop (Seconds (duration));
 Simulator::Run ();
 ```
 
+## Results
+Before running the simulation, we explain two functions that are used to calculate the throughput and the delay of the simulation.  
+`ThroughputMonitor` function is used to calculate the throughput of the simulation. It takes three parameters: `FlowMonitorHelper` object, `FlowMonitor` object, and the simulation duration. Inside the function, the `GetFlowStats()` method is called on the FlowMonitor object to get the statistics for each flow in the simulation. For each flow, the function outputs various statistics to the console, including the flow ID, the number of transmitted and received packets, the duration of the flow, the last received packet time, and the throughput of the flow in Mbps.  
+
+```c++
+void
+ThroughputMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double em)
+{
+    uint16_t i = 0;
+
+    std::map<FlowId, FlowMonitor::FlowStats> flowStats = flowMon->GetFlowStats ();
+
+    Ptr<Ipv4FlowClassifier> classing = DynamicCast<Ipv4FlowClassifier> (fmhelper->GetClassifier ());
+    for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator stats = flowStats.begin (); stats != flowStats.end (); ++stats)
+    {
+        Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow (stats->first);
+
+        std::cout << "Flow ID			: "<< stats->first << " ; " << fiveTuple.sourceAddress << " -----> " << fiveTuple.destinationAddress << std::endl;
+        std::cout << "Tx Packets = " << stats->second.txPackets << std::endl;
+        std::cout << "Rx Packets = " << stats->second.rxPackets << std::endl;
+        std::cout << "Duration		: "<< (stats->second.timeLastRxPacket.GetSeconds () - stats->second.timeFirstTxPacket.GetSeconds ()) << std::endl;
+        std::cout << "Last Received Packet	: "<< stats->second.timeLastRxPacket.GetSeconds () << " Seconds" << std::endl;
+        std::cout << "Throughput: " << stats->second.rxBytes * 8.0 / (stats->second.timeLastRxPacket.GetSeconds () - stats->second.timeFirstTxPacket.GetSeconds ()) / 1024 / 1024  << " Mbps" << std::endl;
+    
+        i++;
+
+        std::cout << "---------------------------------------------------------------------------" << std::endl;
+    }
+
+    Simulator::Schedule (Seconds (1.0),&ThroughputMonitor, fmhelper, flowMon, em);
+}
+```
+The second function for simulation is `AverageDelayMonitor` function. It takes three parameters: `FlowMonitorHelper` object, `FlowMonitor` object, and the simulation duration. Inside the function, the `GetFlowStats()` method is called on the FlowMonitor object to get the statistics for each flow in the simulation. For each flow, the function outputs various statistics to the console, including the flow ID, the number of transmitted and received packets, the duration of the flow, the last received packet time, and the average delay of the flow in seconds.  
+
+```c++
+AverageDelayMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double em)
+{
+    uint16_t i = 0;
+
+    std::map<FlowId, FlowMonitor::FlowStats> flowStats = flowMon->GetFlowStats ();
+    Ptr<Ipv4FlowClassifier> classing = DynamicCast<Ipv4FlowClassifier> (fmhelper->GetClassifier ());
+    for (std::map<FlowId, FlowMonitor::FlowStats>::const_iterator stats = flowStats.begin (); stats != flowStats.end (); ++stats)
+    {
+        Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow (stats->first);
+        std::cout << "Flow ID			: "<< stats->first << " ; " << fiveTuple.sourceAddress << " -----> " << fiveTuple.destinationAddress << std::endl;
+        std::cout << "Tx Packets = " << stats->second.txPackets << std::endl;
+        std::cout << "Rx Packets = " << stats->second.rxPackets << std::endl;
+        std::cout << "Duration		: "<< (stats->second.timeLastRxPacket.GetSeconds () - stats->second.timeFirstTxPacket.GetSeconds ()) << std::endl;
+        std::cout << "Last Received Packet	: "<< stats->second.timeLastRxPacket.GetSeconds () << " Seconds" << std::endl;
+        std::cout << "Sum of e2e Delay: " << stats->second.delaySum.GetSeconds () << " s" << std::endl;
+        std::cout << "Average of e2e Delay: " << stats->second.delaySum.GetSeconds () / stats->second.rxPackets << " s" << std::endl;
+    
+        i++;
+
+        std::cout << "---------------------------------------------------------------------------" << std::endl;
+    }
+
+    Simulator::Schedule (Seconds (1.0),&AverageDelayMonitor, fmhelper, flowMon, em);
+}
+```
+
+So now, this is our result. At first we chose the numbers that made up the word `computer-network` and as it is clear, the result is the same.  
+![result](pictures/result.png)
+
+Functions `ThroughputMonitor` and `AverageDelayMonitor` are called every 1 seconds and prints the delay and output of the simulation.  
+**Throughput** is obtained from the following formula:  
+$$Throughput = \frac{Rx \times 8}{Duration\times 1024\times 1024}$$  
+
+Our table data consists of **Flow ID**, **Tx Packets**, **Rx Packets**, **Duration**, **Last Received Packet**, and **Throughput**.  
+`Tx Packets` is the number of packets transmitted by the application. `Rx Packets` is the number of packets received by the application.  
+
+## Results of Throughput
+
+- Client to Master : As we can see, 590 packets are sent and 588 packets are received. Throughput is 0.00274192 Mbps.  
+
+![result](pictures/clientTomaster.png)
+
+- Master to Mappers : Master sends the message to three mappers. 582 packets are sent and 582 packets are received. It means that none of the packets are lost. Throughput is 0.00452993 Mbps.  
+
+![result](pictures/masterTomappers.png)
+
+- Mappers to Master : Mappers send the message to master because we have TCP connection. 291 packets are sent and 291 packets are received. Throughput is 0.00199792 Mbps.  
+
+![result](pictures/mappersTomaster.png)
+
+- Mappers to Client : As we see, all the packets are received but this isn't happen all the time. Throughputs are different and it depends on the number of packets that are sent. In this case we have 0.00158585 Mbps, 0.000598203 Mbps, and 0.00119099 Mbps.  
+
+![result](pictures/mappersToClient.png)
+
+## Results of Delay
+
+- Client to Master : As we can see, 590 packets are sent and 588 packets are received. The delay is 7.87584e-05 s.
+
+![result](pictures/delayClientTomaster.png)
+
+- Master to Mappers : Master sends the message to three mappers. 582 packets are sent and 582 packets are received. It means that none of the packets are lost. The delays are 0.00184343, 0.00211556, 0.00242731. And because we send the code to the mappers one by one, the number of e2e will increase for each one.  
+
+![result](pictures/delayMasterTomappers.png)
+
+- Mappers to Master : Mappers send the message to master because we have TCP connection. 291 packets are sent and 291 packets are received. The delays are 0.000255903, 0.000340165, 0.000216242. And because we send the code to the mappers one by one, the number of e2e will increase for each one.  
+
+![result](pictures/delayMappersToMaster.png)
+
+- Mappers to Client : As we see, all the packets are received but this isn't happen all the time. The delays are 0.00066427, 0.000924338, 0.000382041. And because we send the code to the mappers one by one, the number of e2e will increase for each one.  
+
+![result](pictures/delayMappersToClient.png)
+
 
 
