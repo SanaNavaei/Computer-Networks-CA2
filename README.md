@@ -486,7 +486,138 @@ mapper::HandleAccept (Ptr<Socket> socket, const Address& from)
     socket->SetRecvCallback (MakeCallback (&mapper::HandleRead, this));
 }
 ```
+Now we are going to explain the important parts of the `main` function.  
 
+This code creates three `NodeContainers` called **wifiStaNodeClient**, **wifiStaNodeMaster**, and **wifiStaNodeMapper**, each containing a certain number of nodes.  
+```c++
+NodeContainer wifiStaNodeClient;
+wifiStaNodeClient.Create (1);
+
+NodeContainer wifiStaNodeMaster;
+wifiStaNodeMaster.Create (1);
+    
+NodeContainer wifiStaNodeMapper;
+wifiStaNodeMapper.Create (3);
+```
+The `YansWifiChannelHelper` class provides methods for creating a wireless channel, and the `YansWifiPhyHelper` class provides methods for setting up a wireless physical layer. The `WifiHelper` class provides methods for setting up and managing a Wi-Fi network.
+
+```c++
+YansWifiChannelHelper channel = YansWifiChannelHelper::Default ();
+
+YansWifiPhyHelper phy;
+phy.SetChannel (channel.Create ());
+
+WifiHelper wifi;
+wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
+```
+This part is for installing wireless devices on the nodes. The `Ssid` class is used to represent a Service Set Identifier (SSID), which is a unique identifier for a wireless network. The `WifiMacHelper` class provides methods for setting up a wireless MAC layer. The `NetDeviceContainer` class is used to store a collection of `NetDevice` objects.  
+
+```c++
+WifiMacHelper mac;
+Ssid ssid = Ssid ("ns-3-ssid");
+mac.SetType ("ns3::StaWifiMac","Ssid", SsidValue (ssid),"ActiveProbing", BooleanValue (false));
+
+NetDeviceContainer staDeviceClient;
+staDeviceClient = wifi.Install (phy, mac, wifiStaNodeClient);
+
+mac.SetType ("ns3::ApWifiMac", "Ssid", SsidValue (ssid));
+
+NetDeviceContainer staDeviceMaster;
+staDeviceMaster = wifi.Install (phy, mac, wifiStaNodeMaster);
+
+mac.SetType ("ns3::StaWifiMac","Ssid", SsidValue (ssid), "ActiveProbing", BooleanValue (false));
+    
+NetDeviceContainer staDeviceMapper;
+staDeviceMapper = wifi.Install (phy, mac, wifiStaNodeMapper);
+```
+
+`MobilityHelper` is a helper class in ns-3 used to configure and install mobility models for nodes in a simulation scenario. It provides methods to set position allocators and mobility models for nodes, and then installs them onto the nodes.  
+
+```c++
+MobilityHelper mobility;
+
+mobility.SetPositionAllocator ("ns3::GridPositionAllocator","MinX", DoubleValue (0.0),"MinY", DoubleValue (0.0),"DeltaX", DoubleValue (3.0),
+                                "DeltaY", DoubleValue (5.0),"GridWidth", UintegerValue (6),"LayoutType", StringValue ("RowFirst"));
+
+mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel","Bounds", RectangleValue (Rectangle (-50, 50, -50, 50)));
+mobility.Install (wifiStaNodeClient);
+
+mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+mobility.Install (wifiStaNodeMaster);
+    
+mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+mobility.Install(wifiStaNodeMapper);
+```
+The `InternetStackHelper` is used to install the **TCP/IP** stack on the nodes in the simulation. In this code snippet, the **TCP/IP** stack is installed on all the nodes created earlier, including the client, master, and mapper nodes.
+
+```c++
+InternetStackHelper stack;
+stack.Install (wifiStaNodeClient);
+stack.Install (wifiStaNodeMaster);
+stack.Install (wifiStaNodeMapper);
+```
+In this part, the **IPv4 addresses** are assigned to the network interfaces of the nodes using the `Ipv4AddressHelper` class.  
+
+The `SetBase()` method of the `Ipv4AddressHelper` class is used to set the base IP address and netmask of the network. In this case, the base IP address is set to **10.1.3.0** and the netmask to **255.255.255.0**.  
+
+The `Assign()` method of the Ipv4AddressHelper class is used to assign IP addresses to the network interfaces of the nodes. The method takes a NetDeviceContainer as input and returns an Ipv4InterfaceContainer that holds the IP addresses assigned to the devices in the container.  
+
+Finally, `Ipv4GlobalRoutingHelper::PopulateRoutingTables()` method is called to populate the routing tables of the nodes with the IP addresses and routes to other nodes in the network.  
+```c++
+Ipv4AddressHelper address;
+
+Ipv4InterfaceContainer staNodeClientInterface;
+Ipv4InterfaceContainer staNodesMasterInterface;
+Ipv4InterfaceContainer staNodesMapperInterface;
+
+address.SetBase ("10.1.3.0", "255.255.255.0");
+staNodeClientInterface = address.Assign (staDeviceClient);
+staNodesMasterInterface = address.Assign (staDeviceMaster);
+staNodesMapperInterface = address.Assign (staDeviceMapper);
+
+Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+```
+
+The `CreateObject` function is used to create each instance of the application, with the specific parameters.  
+The `SetStartTime` method takes a parameter that specifies the simulation time at which the application should start running, and the `SetStopTime` method takes a parameter that specifies the simulation time at which the application should stop running.  
+
+```c++
+Ptr<client> clientApp = CreateObject<client> (port, staNodeClientInterface, port, staNodesMasterInterface);
+wifiStaNodeClient.Get (0)->AddApplication (clientApp);
+clientApp->SetStartTime (Seconds (0.0));
+clientApp->SetStopTime (Seconds (duration));
+
+Ptr<master> masterApp = CreateObject<master> (port, staNodesMasterInterface, port, port, port,
+                                                staNodesMapperInterface);
+wifiStaNodeMaster.Get (0)->AddApplication (masterApp);
+masterApp->SetStartTime (Seconds (0.0));
+masterApp->SetStopTime (Seconds (duration));
+    
+Ptr<mapper> mapperApp_1 = CreateObject<mapper>(port, staNodesMapperInterface, mapper1_mapping, 0);
+wifiStaNodeMapper.Get(0)->AddApplication (mapperApp_1);
+mapperApp_1->SetStartTime (Seconds (0.0));
+mapperApp_1->SetStopTime (Seconds (duration));
+
+Ptr<mapper> mapperApp_2 = CreateObject<mapper> (port, staNodesMapperInterface, mapper2_mapping, 1);
+wifiStaNodeMapper.Get(1)->AddApplication (mapperApp_2);
+mapperApp_2->SetStartTime (Seconds (0.0));
+mapperApp_2->SetStopTime (Seconds (duration));
+
+Ptr<mapper> mapperApp_3 = CreateObject<mapper> (port, staNodesMapperInterface, mapper3_mapping, 2);
+wifiStaNodeMapper.Get(2)->AddApplication (mapperApp_3);
+mapperApp_3->SetStartTime (Seconds (0.0));
+mapperApp_3->SetStopTime (Seconds (duration));
+```
+
+`Simulator::Stop (Seconds (duration))` takes a Time object as a parameter and stops the simulation at the specified duration. The duration parameter in this case specifies the length of the simulation in seconds.  
+
+`Simulator::Run()` runs the simulation from the current simulation time until either the simulation is stopped using `Simulator::Stop()` or the end of the simulation is reached.  
+
+These two methods are typically used together to run a simulation for a specific amount of time. The Stop method sets the end time for the simulation, and the Run method executes the simulation until that end time is reached. After the simulation has completed, the program typically ends and the results of the simulation are output.  
+```c++
+Simulator::Stop (Seconds (duration));
+Simulator::Run ();
+```
 
 
 
