@@ -36,7 +36,7 @@ NS_LOG_COMPONENT_DEFINE ("WifiTopology");
 
 std::map<int, char> mapper1_mapping = {{0, 'a'},{1, 'b'},{2, 'c'},{3, 'd'},{4, 'e'},{5, 'f'},{6, 'g'},{7, 'h'},{8, 'i'}};
 std::map<int, char> mapper2_mapping = {{9, 'j'},{10, 'k'},{11, 'l'},{12, 'm'},{13, 'n'},{14, 'o'},{15, 'p'},{16, 'q'},{17, 'r'}};
-std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'},{26, ' '};
+std::map<int, char> mapper3_mapping = {{18, 's'},{19, 't'},{20, 'u'},{21, 'v'},{22, 'w'},{23, 'x'},{24, 'y'},{25, 'z'},{26, ' '},{27, '-'}};
 
 void
 ThroughputMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double em)
@@ -62,7 +62,7 @@ ThroughputMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, double
         std::cout << "---------------------------------------------------------------------------" << std::endl;
     }
 
-    Simulator::Schedule (Seconds (10),&ThroughputMonitor, fmhelper, flowMon, em);
+    Simulator::Schedule (Seconds (1.0),&ThroughputMonitor, fmhelper, flowMon, em);
 }
 
 void
@@ -88,7 +88,7 @@ AverageDelayMonitor (FlowMonitorHelper *fmhelper, Ptr<FlowMonitor> flowMon, doub
         std::cout << "---------------------------------------------------------------------------" << std::endl;
     }
 
-    Simulator::Schedule (Seconds (10),&AverageDelayMonitor, fmhelper, flowMon, em);
+    Simulator::Schedule (Seconds (1.0),&AverageDelayMonitor, fmhelper, flowMon, em);
 }
 
 class MyHeader : public Header 
@@ -243,7 +243,7 @@ private:
     uint16_t master_port;
     Ipv4InterfaceContainer master_ip;
     std::string result = "";
-    std::vector<uint16_t> input = {7,4,11,11,14,26};
+    std::vector<uint16_t> input = {2,14,12,15,20,19,4,17,27,13,4,19,22,14,17,10,26};
     uint16_t indx = 0;
 };
 
@@ -260,6 +260,7 @@ private:
     
     uint16_t port;
     Ptr<Socket> socket;
+    Ptr<Socket> client_socket;
     Ipv4InterfaceContainer ip;
     std::map<int, char> map_set;
     int i;
@@ -473,7 +474,6 @@ client::HandleRead(Ptr<Socket> socket)
         }
         MyHeader m;
         packet->RemoveHeader (m);
-        //std::cout << "Received packet from " << m.GetIp() << ":" << m.GetPort() << " with data " << static_cast<char>(m.GetData()) << std::endl;
         result += static_cast<char>(m.GetData());
     }
 }
@@ -565,6 +565,8 @@ mapper::StartApplication (void)
     // Listen for incoming connections
     socket->Listen ();
     socket->SetAcceptCallback(MakeNullCallback<bool, Ptr<Socket>, const Address &>(), MakeCallback(&mapper::HandleAccept, this));
+    
+    client_socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
 }
 
 void
@@ -586,20 +588,15 @@ mapper::HandleRead (Ptr<Socket> socket)
         uint16_t port = header.GetPort();
         for (const auto &kv : map_set)
         {
-            //cout << kv.first << " " << data << endl;
             if(kv.first == data)
             {
                 MyHeader header1;
                 char new_data = kv.second;
-                //cout << "new data is " << new_data << endl;
                 header1.SetData(new_data);
                 Ptr<Packet> packet1 = Create<Packet> (header1.GetSerializedSize());
                 packet1->AddHeader(header1);
-                Ptr<Socket> socket = Socket::CreateSocket (GetNode (), UdpSocketFactory::GetTypeId ());
                 InetSocketAddress remote = InetSocketAddress (ip, port);
-                socket->Connect (remote);
-                socket->Send(packet1);
-                socket->Close();
+                client_socket->SendTo(packet1, 0, remote);
                 break;
             }
         }
