@@ -706,17 +706,17 @@ Our table data consists of **Flow ID**, **Tx Packets**, **Rx Packets**, **Durati
 
 - Mappers to Client : As we see, all the packets are received but this isn't happen all the time. Throughputs are different and it depends on the number of packets that are sent. In this case we have 0.00158585 Mbps, 0.000598203 Mbps, and 0.00119099 Mbps.  
 
-![result](pictures/mappersToClient.png)
+![result](pictures/mappersToclient.png)
 
 ## Results of Delay
 
 - Client to Master : As we can see, 590 packets are sent and 588 packets are received. The delay is 7.87584e-05 s.
 
-![result](pictures/delayClientTomaster.png)
+![result](pictures/delayClientToMaster.png)
 
 - Master to Mappers : Master sends the message to three mappers. 582 packets are sent and 582 packets are received. It means that none of the packets are lost. The delays are 0.00184343, 0.00211556, 0.00242731. And because we send the code to the mappers one by one, the number of e2e will increase for each one.  
 
-![result](pictures/delayMasterTomappers.png)
+![result](pictures/delayMasterToMappers.png)
 
 - Mappers to Master : Mappers send the message to master because we have TCP connection. 291 packets are sent and 291 packets are received. The delays are 0.000255903, 0.000340165, 0.000216242. And because we send the code to the mappers one by one, the number of e2e will increase for each one.  
 
